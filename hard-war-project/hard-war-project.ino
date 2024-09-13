@@ -3,11 +3,15 @@
 #include <DHT.h>
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
 
 
 // set up wifi for esp8266
 #define WIFI_SSID "Satyaranjan"
 #define WIFI_PASSWORD "11223344"
+
+// creating a server
+ESP8266WebServer server(80);
 
 // Create an MPU6050 object
 MPU6050 mpu;
@@ -34,6 +38,16 @@ void setup() {
   Serial.println();
   Serial.println("Connected to Wi-Fi");
 
+  // server data
+  server.on("/", handleRoot);
+  server.onNotFound(handleNotFound);
+  server.on("/status", handleStatus);
+  server.begin();
+  Serial.println("HTTP server started");
+  
+  Serial.print("ESP8266 IP address: ");
+  Serial.println(WiFi.localIP());
+
   // Initialize I2C communication with specified SDA and SCL pins
   Wire.begin(D2, D1);  // SDA, SCL for MPU6050
   
@@ -53,6 +67,9 @@ void setup() {
 }
 
 void loop() {
+
+  server.handleClient();
+
   // Variables to hold accelerometer and gyroscope data
   int16_t ax, ay, az;
   int16_t gx, gy, gz;
@@ -69,19 +86,19 @@ void loop() {
   float gyroZ = gz / 131.0;
 
   // Print accelerometer and gyroscope data to Serial Monitor
-  Serial.print("Accel (g): X = ");
-  Serial.print(accelX);
-  Serial.print(", Y = ");
-  Serial.print(accelY);
-  Serial.print(", Z = ");
-  Serial.println(accelZ);
+  // Serial.print("Accel (g): X = ");
+  // Serial.print(accelX);
+  // Serial.print(", Y = ");
+  // Serial.print(accelY);
+  // Serial.print(", Z = ");
+  // Serial.println(accelZ);
 
-  Serial.print("Gyro (deg/s): X = ");
-  Serial.print(gyroX);
-  Serial.print(", Y = ");
-  Serial.print(gyroY);
-  Serial.print(", Z = ");
-  Serial.println(gyroZ);
+  // Serial.print("Gyro (deg/s): X = ");
+  // Serial.print(gyroX);
+  // Serial.print(", Y = ");
+  // Serial.print(gyroY);
+  // Serial.print(", Z = ");
+  // Serial.println(gyroZ);
 
   // Read temperature and humidity from DHT11 sensor
   float humidity = dht.readHumidity();
@@ -92,12 +109,12 @@ void loop() {
     Serial.println("Failed to read from DHT sensor!");
   } else {
     // Print DHT11 data to Serial Monitor
-    Serial.print("Humidity: ");
-    Serial.print(humidity);
-    Serial.print(" %\t");
-    Serial.print("Temperature: ");
-    Serial.print(temperature);
-    Serial.println(" *C");
+    // Serial.print("Humidity: ");
+    // Serial.print(humidity);
+    // Serial.print(" %\t");
+    // Serial.print("Temperature: ");
+    // Serial.print(temperature);
+    // Serial.println(" *C");
   }
 
   delay(2000);  // Delay for 2 seconds before next read
@@ -109,4 +126,19 @@ void loop() {
 
   serializeJson(doc, jsonString);
   Serial.println(jsonString);
+}
+void handleRoot() {
+  server.send(200, "text/html", "<h1>Hello, this is ESP8266 Web Server!</h1>");
+}
+void handleNotFound() {
+  server.send(404, "text/plain", "404: Not Found");
+}
+void handleStatus() {
+  String message = "ESP8266 Status: \n";
+  message += "IP Address: ";
+  message += WiFi.localIP().toString();
+  message += "\nWi-Fi Signal Strength (RSSI): ";
+  message += WiFi.RSSI();
+  message += " dBm\n";
+  server.send(200, "text/plain", message);
 }
