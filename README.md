@@ -25,10 +25,7 @@ Insert gif or link to demo
 
 ## Authors
 
-- [Satya Ranjan Nayak](https://www.github.com/octokatherine)
-- [Aryan Kumar Singh](https://www.github.com/octokatherine)
-- [Roshan Singh](https://www.github.com/octokatherine)
-- [Debasish Patra](https://www.github.com/octokatherine)
-- [Simran Chaudhury](https://www.github.com/octokatherine)
-- [Bhumi Shankar](https://www.github.com/octokatherine)
+- [Roshan Kumar](https://github.com/Roshan5566101)
+- [Simran Chaudhury](https://github.com/iamsmrn)
+- [Bhumi Shankar](https://github.com/iambhumi)
 
