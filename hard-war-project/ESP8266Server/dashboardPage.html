@@ -10,16 +10,23 @@
         text-align: center;
         background-color: #f9f9f9;
       }
+      @media only screen and (max-width: 495px) {
+        .feedback-container{
+          flex-direction: column;
+        }
+      }
 
       h1 {
         font-size: 2em;
         margin-bottom: 20px;
+        height: 150px;
       }
 
       .feedback-container {
         display: flex;
         justify-content: center;
         gap: 20px;
+        
       }
 
       .feedback-card {
