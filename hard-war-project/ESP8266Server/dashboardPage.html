@@ -60,12 +60,19 @@
       .temperature {
         background-color: #eaf3ff;
       }
+      iframe{
+        border: 2px solid #8bc5f0;
+        border-radius: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      }
     </style>
   </head>
   <body>
     <h1>Student Feedback</h1>
-
     <div class='feedback-container'>
+      <div class="vid">
+        <iframe src="http://192.168.247.22:81/" width="640" height="480" frameborder="0"></iframe>
+      </div>
       <div class='feedback-card facial-exp'>
         <h2>Facial exp</h2>
         <p class='status'>Active</p>
@@ -78,8 +85,26 @@
 
       <div class='feedback-card temperature'>
         <h2>Temperature</h2>
-        <p class='status'>Normal</p>
+        <p class='status' id='temp'>Normal</p>
       </div>
+      
     </div>
+    <script>
+      let Socket;
+      function init() {
+        Socket = new WebSocket('ws://' + window.location.hostname + ':81/');
+        Socket.onmessage = function (event) {
+          processCommand(event);
+        };
+      }
+      function processCommand(event) {
+        let obj = JSON.parse(event.data);
+        document.getElementById('temp').innerHTML = obj.temperature;
+        console.log(event.data);
+      }
+      window.onload = function (event) {
+        init();
+      };
+    </script>
   </body>
 </html>

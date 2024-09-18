@@ -5,6 +5,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <WebSocketsServer.h>
+#include <ArduinoWebsockets.h>
 
 
 // set up wifi for esp8266
@@ -14,7 +15,7 @@
 // creating a server
 ESP8266WebServer server(80);
 
-String webpage = "<!DOCTYPE html><html lang='en'> <head> <meta charset='UTF-8' /> <meta name='viewport' content='width=device-width, initial-scale=1.0' /> <title>Student Feedback</title> <style> body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; } h1 { font-size: 2em; margin-bottom: 20px; } .feedback-container { display: flex; justify-content: center; gap: 20px; } .feedback-card { border: 2px solid #8bc5f0; border-radius: 10px; padding: 20px; width: 150px; height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); } .feedback-card h2 { font-size: 1.2em; margin-bottom: 10px; } .feedback-card p { font-size: 1.2em; color: green; } .feedback-card .status { font-weight: bold; } .facial-exp { background-color: #eaf3ff; } .movement { background-color: #eaf3ff; } .temperature { background-color: #eaf3ff; } </style> </head> <body> <h1>Student Feedback</h1> <div class='feedback-container'> <div class='feedback-card facial-exp'> <h2>Facial exp</h2> <p class='status'>Active</p> </div> <div class='feedback-card movement'> <h2>Movement</h2> <p class='status'>Normal</p> </div> <div class='feedback-card temperature'> <h2>Temperature</h2> <p class='status'>Normal</p> </div> </div> </body></html>";
+String webpage = "<!DOCTYPE html><html lang='en'> <head> <meta charset='UTF-8' /> <meta name='viewport' content='width=device-width, initial-scale=1.0' /> <title>Student Feedback</title> <style> body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; } h1 { font-size: 2em; margin-bottom: 20px; } .feedback-container { display: flex; justify-content: center; gap: 20px; } .feedback-card { border: 2px solid #8bc5f0; border-radius: 10px; padding: 20px; width: 150px; height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); } .feedback-card h2 { font-size: 1.2em; margin-bottom: 10px; } .feedback-card p { font-size: 1.2em; color: green; } .feedback-card .status { font-weight: bold; } .facial-exp { background-color: #eaf3ff; } .movement { background-color: #eaf3ff; } .temperature { background-color: #eaf3ff; } </style> </head> <body> <h1>Student Feedback</h1> <div class='feedback-container'> <div class='feedback-card facial-exp'> <h2>Facial exp</h2> <p class='status'>Active</p> </div> <div class='feedback-card movement'> <h2>Movement</h2> <p class='status'>Normal</p> </div> <div class='feedback-card temperature'> <h2>Temperature</h2> <p class='status' id='temp'>Normal</p> </div> </div> <script> console.log('hello'); let Socket; function init() { console.log('init'); Socket = new WebSocket('ws://' + window.location.hostname + ':81/'); Socket.onmessage = function (event) { processCommand(event); }; } function processCommand(event) { console.log('event'); let obj = JSON.parse(event.data); document.getElementById('temp').innerHTML = obj.temperature; console.log(event.data); } window.onload = function (event) { console.log('onload'); init(); }; </script> </body></html>";
 
 // creating websocket server
 WebSocketsServer webSocket = WebSocketsServer(81);
@@ -49,6 +50,8 @@ void setup() {
   server.onNotFound(handleNotFound);
   server.on("/status", handleStatus);
   server.begin();
+  webSocket.begin();
+
   Serial.println("HTTP server started");
 
   Serial.print("ESP8266 IP address: ");
@@ -75,6 +78,7 @@ void setup() {
 void loop() {
 
   server.handleClient();
+  webSocket.loop();
 
   // Variables to hold accelerometer and gyroscope data
   int16_t ax, ay, az;
@@ -92,19 +96,19 @@ void loop() {
   float gyroZ = gz / 131.0;
 
   // Print accelerometer and gyroscope data to Serial Monitor
-  // Serial.print("Accel (g): X = ");
-  // Serial.print(accelX);
-  // Serial.print(", Y = ");
-  // Serial.print(accelY);
-  // Serial.print(", Z = ");
-  // Serial.println(accelZ);
+  Serial.print("Accel (g): X = ");
+  Serial.print(accelX);
+  Serial.print(", Y = ");
+  Serial.print(accelY);
+  Serial.print(", Z = ");
+  Serial.println(accelZ);
 
-  // Serial.print("Gyro (deg/s): X = ");
-  // Serial.print(gyroX);
-  // Serial.print(", Y = ");
-  // Serial.print(gyroY);
-  // Serial.print(", Z = ");
-  // Serial.println(gyroZ);
+  Serial.print("Gyro (deg/s): X = ");
+  Serial.print(gyroX);
+  Serial.print(", Y = ");
+  Serial.print(gyroY);
+  Serial.print(", Z = ");
+  Serial.println(gyroZ);
 
   // Read temperature and humidity from DHT11 sensor
   float humidity = dht.readHumidity();
@@ -132,6 +136,12 @@ void loop() {
 
   serializeJson(doc, jsonString);
   Serial.println(jsonString);
+
+  String str = String(random(100));
+  int str_len = str.length();
+  char char_array[str_len];
+  str.toCharArray(char_array, str_len);
+  webSocket.broadcastTXT(jsonString);
 }
 void handleRoot() {
   server.send(200, "text/html", webpage);
