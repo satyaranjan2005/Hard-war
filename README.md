@@ -18,7 +18,7 @@ Insert gif or link to demo
 - **DHT11**: Sensor for temperature reading.
 
 **Language:** 
-- C++,HTML,CSS,JavaScript,SQL,PHP
+- C++,HTML,CSS,JavaScript
 
 **Tools:** Arduino IDE
 
