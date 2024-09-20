@@ -1,7 +1,7 @@
 
 # IoT Based Student Performance Monitoring System
 
-A real time IoT based solution for student performance tracking through wearable device and smart desk. A dedicated web dashboard is designed for monitor student's performance.
+A real time IoT based solution for student performance tracking through wearable device and smart desk. A dedicated web dashboard is designed for monitor student's performance. Submission for Hardwar 3.0 Hackathon's problem statement [HWPS-Edu-2](https://www.hardwar.in/topics) under the category Innovation for Education.
 
 
 
@@ -18,7 +18,7 @@ Insert gif or link to demo
 - **DHT11**: Sensor for temperature reading.
 
 **Language:** 
-- C++,HTML,CSS,JavaScript,SQL,PHP
+- C++,HTML,CSS,JavaScript
 
 **Tools:** Arduino IDE
 
