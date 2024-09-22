@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
     <title>Student Dashboard</title>
     <style>
       *{
@@ -91,45 +91,45 @@
   <body>
     <h1>Student Performance Dashboard</h1>
 
-    <div class="feedback-container">
-      <div class="vid">
+    <div class='feedback-container'>
+      <div class='vid'>
         <iframe
-          src="http://192.168.247.22:81/"
-          width="640"
-          height="480"
-          frameborder="0"
+          src='http://192.168.247.22:81/'
+          width='640'
+          height='480'
+          frameborder='0'
         ></iframe>
       </div>
-      <div class="info">
-        <div class="feedback-card facial-exp">
+      <div class='info'>
+        <div class='feedback-card facial-exp'>
           <h2>Facial exp</h2>
-          <p class="status">Active</p>
+          <p class='status'>Active</p>
         </div>
 
-        <div class="feedback-card movement">
+        <div class='feedback-card movement'>
           <h2>Movement</h2>
-          <p class="status" id="motion">Normal</p>
+          <p class='status' id='motion'>Normal</p>
         </div>
 
-        <div class="feedback-card temperature">
+        <div class='feedback-card temperature'>
           <h2>Temperature Status</h2>
-          <p class="status" id="tempStatus">Normal</p>
-          <p class="status" id="temp">36°C</p>
+          <p class='status' id='tempStatus'>Normal</p>
+          <p class='status' id='temp'>36°C</p>
         </div>
 
-        <div class="feedback-card temperature">
+        <div class='feedback-card temperature'>
           <h2>Sensor Status</h2>
           <h3>Gyroscope</h3>
-          <p class="status" id="mpuStatus">Connected</p>
+          <p class='status' id='mpuStatus'>Connected</p>
           <h3>Temperature Sensor</h3>
-          <p class="status" id="dhtStatus">Connected</p>
+          <p class='status' id='dhtStatus'>Connected</p>
         </div>
       </div>
     </div>
     <script>
       let Socket;
       function init() {
-        Socket = new WebSocket("ws://" + window.location.hostname + ":81/");
+        Socket = new WebSocket('ws://' + window.location.hostname + ':81/');
         Socket.onmessage = function (event) {
           processCommand(event);
         };
@@ -137,38 +137,39 @@
       function processCommand(event) {
         let obj = JSON.parse(event.data);
         if (obj.dhtStatus) {
-          document.getElementById("dhtStatus").innerText = "Connected";
-          document.getElementById("dhtStatus").style.color = "green";
+          document.getElementById('dhtStatus').innerText = 'Connected';
+          document.getElementById('dhtStatus').style.color = 'green';
           if (obj.bodyTemperatureStatus) {
-            document.getElementById("tempStatus").innerText = "Normal";
-            document.getElementById("tempStatus").style.color = "green";
+            document.getElementById('tempStatus').innerText = 'Normal';
+            document.getElementById('tempStatus').style.color = 'green';
           } else {
-            document.getElementById("tempStatus").innerText = "Abnormal";
-            document.getElementById("tempStatus").style.color = "red";
+            document.getElementById('tempStatus').innerText = 'Abnormal';
+            document.getElementById('tempStatus').style.color = 'red';
           }
-          document.getElementById("temp").innerHTML = obj.temperature + "°C";
+          document.getElementById('temp').innerHTML = obj.temperature + '°C';
         } else {
-          document.getElementById("dhtStatus").innerText = "Disconnected!";
-          document.getElementById("dhtStatus").style.color = "red";
-          document.getElementById("tempStatus").innerText = "Fail to collect data!";
-          document.getElementById("tempStatus").style.color = "red";
+          document.getElementById('dhtStatus').innerText = 'Disconnected!';
+          document.getElementById('dhtStatus').style.color = 'red';
+          document.getElementById('tempStatus').innerText = 'Fail to collect data!';
+          document.getElementById('tempStatus').style.color = 'red';
+          document.getElementById('temp').innerHTML = ' ';
         }
 
         if (obj.mpuStatus) {
-          document.getElementById("mpuStatus").innerText = "Connected";
-          document.getElementById("mpuStatus").style.color = "green";
+          document.getElementById('mpuStatus').innerText = 'Connected';
+          document.getElementById('mpuStatus').style.color = 'green';
           if (obj.motion) {
-            document.getElementById("motion").innerText = "Motion Detected";
-            document.getElementById("motion").style.color = "red";
+            document.getElementById('motion').innerText = 'Motion Detected';
+            document.getElementById('motion').style.color = 'red';
           } else {
-            document.getElementById("motion").innerText = "Normal";
-            document.getElementById("motion").style.color = "green";
+            document.getElementById('motion').innerText = 'Normal';
+            document.getElementById('motion').style.color = 'green';
           }
         } else {
-          document.getElementById("mpuStatus").innerText = "Disconnected!";
-          document.getElementById("mpuStatus").style.color = "red";
-          document.getElementById("motion").innerText = "Fail to collect data!";
-          document.getElementById("motion").style.color = "red";
+          document.getElementById('mpuStatus').innerText = 'Disconnected!';
+          document.getElementById('mpuStatus').style.color = 'red';
+          document.getElementById('motion').innerText = 'Fail to collect data!';
+          document.getElementById('motion').style.color = 'red';
         }
 
       }
