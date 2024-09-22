@@ -36,16 +36,21 @@ String webpage = "<!DOCTYPE html><html lang='en'> <head> <meta charset='UTF-8' /
 
 // Threshold values for detecting sudden movement
 const int accelerationThreshold = 2000;  // Adjust this based on sensitivity
-const int gyroscopeThreshold = 500;      // Threshold for angular velocity
+const int gyroscopeThreshold = 500;  // Threshold for angular velocity
 
 // Constants for storing normal temperature bounds
 const float lowerTemperatureBound = 36.1;
 const float upperTemperatureBound = 37.2;
-float humidity, temperature;
+float temperature;
 
 // Variables to hold accelerometer and gyroscope data
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
+
+bool motion = false;
+bool bodyTemperatureStatus;
+bool dhtStatus;
+bool mpuStatus;
 
 void setup() {
   // Start serial communication at 115200 baud rate
@@ -73,15 +78,16 @@ void loop() {
   mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
   
   // if this returns true, send "Moving!" to html page and make label red!
-  isMotionDetected(ax, ay, az, gx, gy, gz);
+  motion = isMotionDetected(ax, ay, az, gx, gy, gz);
 
   // Read temperature and humidity from DHT11 sensor
-  humidity = dht.readHumidity();
   temperature = dht.readTemperature();
 
   // Check if any reads failed and exit early (to try again)
-  showDHT11Status();
-  showMPU6050Status();
+  dhtStatus = showDHT11Status();
+  mpuStatus = showMPU6050Status();
+
+  bodyTemperatureStatus = getBodyTemperatureStatus(temperature);
 
   delay(2000);  // Delay for 2 seconds before next read
   
@@ -108,17 +114,14 @@ void handleStatus() {
 
 void sendSensorDataToWebPage() {
   doc["temperature"] = temperature;
-  doc["humidity"] = humidity;
-  doc["device"] = "ESP8266";
-  doc["status"] = "OK";
+  doc["bodyTemperatureStatus"] = bodyTemperatureStatus;
+  doc["motion"] = motion;
+  doc["mpuStatus"] = mpuStatus;
+  doc["dhtStatus"] = dhtStatus;
 
   serializeJson(doc, jsonString);
   Serial.println(jsonString);
 
-  String str = String(random(100));
-  int str_len = str.length();
-  char char_array[str_len];
-  str.toCharArray(char_array, str_len);
   webSocket.broadcastTXT(jsonString);
 }
 
@@ -144,25 +147,29 @@ void initializeESP8266Wifi() {
   Serial.println(WiFi.localIP());
 }
 
-String showMPU6050Status() {
+bool showMPU6050Status() {
  // Check if the MPU6050 is connected properly
   if (mpu.testConnection()) {
     Serial.println("MPU6050 connection successful.");
+    return true;
     // Write code so that it updates the webpage with relevent movement status from isMotionDetected function
   } else {
     Serial.println("MPU6050 connection failed!");
+    return false;
     // Write code so that it updates the webpage that "Failed to read MPU6050!"
     // while (1);  // Stay in a loop if the connection fails
   }
 }
 
-String showDHT11Status() {
+bool showDHT11Status() {
   // Check DHT11 Sensor sensor
-  if (isnan(humidity) || isnan(temperature)) {
-    Serial.println("Failed to read from DHT sensor!");
+  if (isnan(temperature)) {
+    Serial.println("Failed to get data from dht11");
+    return false;
     // Write code so that it updates the webpage that "Failed to read from DHT sensor!"
-  } else { 
-    Serial.println("Sucessfully Connected to DHT11");
+  } else {
+    Serial.println("Successfully connected to DHT11"); 
+    return true;
     // Write code so that it updates the webpage with sensor data"
   }
 }
@@ -188,11 +195,11 @@ bool isMotionDetected(int16_t xAcc, int16_t yAcc, int16_t zAcc, int16_t xGyro, i
 }
 
 // Returns stated of human body temperature based on the readings from the sensors
-String getBodyTemperatureStatus(float sensorTemperature) {
+bool getBodyTemperatureStatus(float sensorTemperature) {
   // Normal human body temperature
   if(sensorTemperature <= lowerTemperatureBound && sensorTemperature >= upperTemperatureBound) {
-     return "Normal"
+     return false
   } else {
-    return "Abnormal"
+    return true
   }
 }
