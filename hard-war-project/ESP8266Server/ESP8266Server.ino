@@ -32,7 +32,7 @@ StaticJsonDocument<200> doc;
 String jsonString;
 
 // HTML for webpage
-String webpage = "<!DOCTYPE html><html lang='en'> <head> <meta charset='UTF-8' /> <meta name='viewport' content='width=device-width, initial-scale=1.0' /> <title>Student Feedback</title> <style> body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; } h1 { font-size: 2em; margin-bottom: 20px; } .feedback-container { display: flex; justify-content: center; gap: 20px; } .feedback-card { border: 2px solid #8bc5f0; border-radius: 10px; padding: 20px; width: 150px; height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); } .feedback-card h2 { font-size: 1.2em; margin-bottom: 10px; } .feedback-card p { font-size: 1.2em; color: green; } .feedback-card .status { font-weight: bold; } .facial-exp { background-color: #eaf3ff; } .movement { background-color: #eaf3ff; } .temperature { background-color: #eaf3ff; } </style> </head> <body> <h1>Student Feedback</h1> <div class='feedback-container'> <div class='feedback-card facial-exp'> <h2>Facial exp</h2> <p class='status'>Active</p> </div> <div class='feedback-card movement'> <h2>Movement</h2> <p class='status'>Normal</p> </div> <div class='feedback-card temperature'> <h2>Temperature</h2> <p class='status' id='temp'>Normal</p> </div> </div> <script> console.log('hello'); let Socket; function init() { console.log('init'); Socket = new WebSocket('ws://' + window.location.hostname + ':81/'); Socket.onmessage = function (event) { processCommand(event); }; } function processCommand(event) { console.log('event'); let obj = JSON.parse(event.data); document.getElementById('temp').innerHTML = obj.temperature; console.log(event.data); } window.onload = function (event) { console.log('onload'); init(); }; </script> </body></html>";
+String webpage = "<!DOCTYPE html><html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>Student Dashboard</title> <style> *{ margin: 0; } body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; } h1 { font-size: 2em; margin-bottom: 20px; } .feedback-container { display: flex; justify-content: center; gap: 20px; } .feedback-card { border: 2px solid #8bc5f0; border-radius: 10px; padding: 20px; width: 150px; height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); gap: 10px; } .feedback-card h2 { font-size: 1.2em; margin-bottom: 5px; } .feedback-card h3{ font-size: 1.1em; } .feedback-card p { font-size: 1em; color: green; } .feedback-card .status { font-weight: bold; } .facial-exp { background-color: #eaf3ff; } .movement { background-color: #eaf3ff; } .temperature { background-color: #eaf3ff; } .info { display: grid; grid-template-rows: repeat(2, 1fr); grid-template-columns: repeat(2, 1fr); gap: 10px; } iframe { border: 2px solid #8bc5f0; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); } @media screen and (max-width: 1070px) { .feedback-container { flex-direction: column; } .info { justify-items: center; } } </style> </head> <body> <h1>Student Performance Dashboard</h1> <div class="feedback-container"> <div class="vid"> <iframe src="http://192.168.247.22:81/" width="640" height="480" frameborder="0" ></iframe> </div> <div class="info"> <div class="feedback-card facial-exp"> <h2>Facial exp</h2> <p class="status">Active</p> </div> <div class="feedback-card movement"> <h2>Movement</h2> <p class="status" id="motion">Normal</p> </div> <div class="feedback-card temperature"> <h2>Temperature Status</h2> <p class="status" id="tempStatus">Normal</p> <p class="status" id="temp">36°C</p> </div> <div class="feedback-card temperature"> <h2>Sensor Status</h2> <h3>Gyroscope</h3> <p class="status" id="mpuStatus">Connected</p> <h3>Temperature Sensor</h3> <p class="status" id="dhtStatus">Connected</p> </div> </div> </div> <script> let Socket; function init() { Socket = new WebSocket("ws://" + window.location.hostname + ":81/"); Socket.onmessage = function (event) { processCommand(event); }; } function processCommand(event) { let obj = JSON.parse(event.data); if (obj.dhtStatus) { document.getElementById("dhtStatus").innerText = "Connected"; document.getElementById("dhtStatus").style.color = "green"; if (obj.bodyTemperatureStatus) { document.getElementById("tempStatus").innerText = "Normal"; document.getElementById("tempStatus").style.color = "green"; } else { document.getElementById("tempStatus").innerText = "Abnormal"; document.getElementById("tempStatus").style.color = "red"; } document.getElementById("temp").innerHTML = obj.temperature + "°C"; } else { document.getElementById("dhtStatus").innerText = "Disconnected!"; document.getElementById("dhtStatus").style.color = "red"; document.getElementById("tempStatus").innerText = "Fail to collect data!"; document.getElementById("tempStatus").style.color = "red"; } if (obj.mpuStatus) { document.getElementById("mpuStatus").innerText = "Connected"; document.getElementById("mpuStatus").style.color = "green"; if (obj.motion) { document.getElementById("motion").innerText = "Motion Detected"; document.getElementById("motion").style.color = "red"; } else { document.getElementById("motion").innerText = "Normal"; document.getElementById("motion").style.color = "green"; } } else { document.getElementById("mpuStatus").innerText = "Disconnected!"; document.getElementById("mpuStatus").style.color = "red"; document.getElementById("motion").innerText = "Fail to collect data!"; document.getElementById("motion").style.color = "red"; } } window.onload = function (event) { init(); }; </script> </body></html>";
 
 // Threshold values for detecting sudden movement
 const int accelerationThreshold = 2000;  // Adjust this based on sensitivity
@@ -89,9 +89,11 @@ void loop() {
 
   bodyTemperatureStatus = getBodyTemperatureStatus(temperature);
 
-  delay(2000);  // Delay for 2 seconds before next read
-  
   sendSensorDataToWebPage();
+
+  delay(500);  // Delay for 2 seconds before next read
+  
+  
 }
 
 void handleRoot() {
@@ -191,6 +193,8 @@ bool isMotionDetected(int16_t xAcc, int16_t yAcc, int16_t zAcc, int16_t xGyro, i
     Serial.print("GY: "); Serial.print(gy);
     Serial.print("GZ: "); Serial.println(gz);
     return false;
+  } else {
+    return true;
   }
 }
 
@@ -198,8 +202,8 @@ bool isMotionDetected(int16_t xAcc, int16_t yAcc, int16_t zAcc, int16_t xGyro, i
 bool getBodyTemperatureStatus(float sensorTemperature) {
   // Normal human body temperature
   if(sensorTemperature <= lowerTemperatureBound && sensorTemperature >= upperTemperatureBound) {
-     return false
+     return false;
   } else {
-    return true
+    return true;
   }
 }
